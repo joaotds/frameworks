@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela de Usuários</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Tabela de Usuários</h2>
+
+    <?php
+    $host = '';
+    $user = 'root';
+    $pass = 'bancodedados';
+    $dbname = '';
+
+    $conn = new mysqli($host, $user, $pass);
+
+    if ($conn->connect_error) {
+        die("Falha na conexão: " . $conn->connect_error);
+    }
+
+    $sql = "CREATE DATABASE IF NOT EXISTS $dbname";
+    if ($conn->query($sql) === TRUE) {
+        echo "Base de dados '$dbname' pronta.<br>";
+    } else {
+        echo "Erro ao criar a base de dados: " . $conn->error . "<br>";
+    }
+
+    $conn->select_db($dbname);
+
+    $table_sql = "CREATE TABLE IF NOT EXISTS usuarios (
+        id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        nome VARCHAR(30) NOT NULL,
+        email VARCHAR(50),
+        reg_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )";
+
+    if ($conn->query($table_sql) === TRUE) {
+        echo "Tabela 'usuarios' pronta.<br>";
+    } else {
+        echo "Erro ao criar a tabela: " . $conn->error . "<br>";
+    }
+
+    $insert_sql = "INSERT INTO usuarios (nome, email) VALUES 
+    ('João Silva', 'joao@example.com'), 
+    ('Maria Santos', 'maria@example.com'), 
+    ('Carlos Souza', 'carlos@example.com')";
+
+    if ($conn->query($insert_sql) === TRUE) {
+        echo "Dados inseridos com sucesso.<br>";
+    } else {
+
+        if ($conn->errno != 1062) { // 1062 é o código de erro para duplicata de entrada
+            echo "Erro ao inserir dados: " . $conn->error . "<br>";
+        }
+    }
+
+    $sql = "SELECT id, nome, email, reg_date FROM usuarios";
+    $result = $conn->query($sql);
+
+    if ($result->num_rows > 0) {
+        echo "<table class='table table-bordered table-striped'>
+                <thead class='thead-dark'>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Data de Registro</th>
+                    </tr>
+                </thead>
+                <tbody>";
+        
+        while($row = $result->fetch_assoc()) {
+            echo "<tr>
+                    <td>" . $row["id"] . "</td>
+                    <td>" . $row["nome"] . "</td>
+                    <td>" . $row["email"] . "</td>
+                    <td>" . $row["reg_date"] . "</td>
+                  </tr>";
+        }
+        echo "</tbody></table>";
+    } else {
+        echo "<div class='alert alert-warning' role='alert'>0 resultados</div>";
+    }
+
+    $conn->close();
+    ?>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
